@@ -161,8 +161,8 @@ public class SubscriptionService
             OfferId = subscription.AmpOfferId,
             Term = new TermResult
             {
-                StartDate = subscription.StartDate.GetValueOrDefault(),
-                EndDate = subscription.EndDate.GetValueOrDefault(),
+                StartDate = subscription.StartDate.Value.Year == 1 ? DateTime.UtcNow :subscription.StartDate.GetValueOrDefault(),
+                EndDate = subscription.EndDate.Value.Year == 1 ? DateTime.UtcNow.AddDays(30): subscription.EndDate.GetValueOrDefault(),
             },
             Quantity = subscription.Ampquantity,
             Name = subscription.Name,
