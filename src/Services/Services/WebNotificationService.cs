@@ -93,7 +93,7 @@ public class WebNotificationService : IWebNotificationService
                 {
                     EmailId = getSubApiResult.Beneficiary.EmailId,
                     TenantId = getSubApiResult.Beneficiary.TenantId,
-                    Puid = getSubApiResult.Beneficiary.Puid,
+                    //Puid = getSubApiResult.Beneficiary.Puid,
                     ObjectId = getSubApiResult.Beneficiary.ObjectId,
                 },
                 Term = new TermResult
@@ -103,13 +103,37 @@ public class WebNotificationService : IWebNotificationService
                     TermUnit = getSubApiResult.Term.TermUnit,
                 },
             },
-            PayloadFromWebhook = null
+            //PayloadFromWebhook = null
         };
+        var country = "USA";
+        foreach (var item in webNotificationLandingpagePayload.PayloadFromLandingpage.LandingPageCustomFields)
+        {
+            var key = item.Key;
+            if (key == "Country")
+            {
+                country = item.Value;
+            }
 
-        JsonSerializerOptions options = new JsonSerializerOptions();
+        }
+        //IndexViewModel model = new IndexViewModel
+        //{
+        //    DisplayName = getSubApiResult.Name,
+        //    Email = getSubApiResult.Purchaser.EmailId,
+        //    SubscriptionName = getSubApiResult.Name,
+        //    FulfillmentStatus = getSubApiResult.SaasSubscriptionStatus,
+        //    PlanName = getSubApiResult.PlanId,
+        //    SubscriptionId = getSubApiResult.Id.ToString(),
+        //    TenantId = getSubApiResult.Purchaser.TenantId.ToString(),
+        //    PurchaseIdToken = string.Empty
+        //};
+        JsonSerializerOptions options = new JsonSerializerOptions()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
         options.WriteIndented = true;
         string landingPagePayloadJson = JsonSerializer.Serialize(webNotificationLandingpagePayload, options);
-        await CallNotificationURL(landingPagePayloadJson, "LandingPage", webNotificationLandingpagePayload.PayloadFromLandingpage.Id);
+        //string landingPagePayloadJson = JsonSerializer.Serialize(model, options);
+        await CallNotificationURL(landingPagePayloadJson, "LandingPage", webNotificationLandingpagePayload.PayloadFromLandingpage.Id, country);
     }
 
     /// <summary>
@@ -124,7 +148,17 @@ public class WebNotificationService : IWebNotificationService
             EventType = WebNotificationEventTypeEnum.Webhook,
             PayloadFromWebhook = WebhookPayload,
         };
-
+        //IndexViewModel model = new IndexViewModel
+        //{
+        //    DisplayName = WebhookPayload.PurchaserDisplayName,
+        //    Email = WebhookPayload.PurchaserEmail,
+        //    SubscriptionName = WebhookPayload.SubscriptionName,
+        //    FulfillmentStatus = WebhookPayload.FulfillmentStatus,
+        //    PlanName = WebhookPayload.PlanName,
+        //    SubscriptionId = WebhookPayload.SubscriptionId.ToString(),
+        //    TenantId = WebhookPayload.PurchaserTenantId,
+        //    PurchaseIdToken = WebhookPayload.PurchaseIdToken
+        //};
         JsonSerializerOptions options = new JsonSerializerOptions();
         options.WriteIndented = true; 
         string webhookPayloadJson = JsonSerializer.Serialize(webNotificationWebhookPayload, options);
@@ -137,12 +171,23 @@ public class WebNotificationService : IWebNotificationService
     /// Sends out the notification.
     /// </summary>
     /// <param name="payload">Content of the notification.</param>
-    async Task CallNotificationURL(string payload, string eventType, Guid subscriptionId)
+    async Task CallNotificationURL(string payload, string eventType, Guid subscriptionId, string country)
     {
         try
         {
             var WebNotificationUrl = this.applicationConfigRepository.GetValueByName(StringLiteralConstants.WebNotificationUrl);
-
+            if (country == "USA")
+            {
+                WebNotificationUrl = "https://aspire-dashboard.ext.wonderfulforest-a8e2a701.westus2.azurecontainerapps.io/v1/marketplace/registerfromaccelarator";
+            }
+            else if (country == "India")
+            {
+                WebNotificationUrl = "https://apiservice.calmbush-b4dd363b.centralindia.azurecontainerapps.io/v1/marketplace/registerfromaccelarator";
+            }
+            else if (country == "Australia")
+            {
+                WebNotificationUrl = "https://apiservice.proudisland-ae846d1e.australiaeast.azurecontainerapps.io/v1/marketplace/registerfromaccelarator";
+            }
             //validate the URL
             if (!UrlValidator.IsValidUrlHttps(WebNotificationUrl))
             {
@@ -182,4 +227,16 @@ public class WebNotificationService : IWebNotificationService
     }
 
 
+}
+
+public class IndexViewModel
+{
+    public string DisplayName { get; set; }
+    public string Email { get; set; }
+    public string SubscriptionName { get; set; }
+    public SubscriptionStatusEnum? FulfillmentStatus { get; set; }
+    public string PlanName { get; set; }
+    public string SubscriptionId { get; set; }
+    public string TenantId { get; set; }
+    public string PurchaseIdToken { get; set; }
 }
