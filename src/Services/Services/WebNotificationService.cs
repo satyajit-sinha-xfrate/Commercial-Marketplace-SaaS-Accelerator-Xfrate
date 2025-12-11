@@ -148,6 +148,16 @@ public class WebNotificationService : IWebNotificationService
             EventType = WebNotificationEventTypeEnum.Webhook,
             PayloadFromWebhook = WebhookPayload,
         };
+        var country = "USA";
+        //foreach (var item in webNotificationWebhookPayload.PayloadFromWebhook.LandingPageCustomFields)
+        //{
+        //    var key = item.Key;
+        //    if (key == "Country")
+        //    {
+        //        country = item.Value;
+        //    }
+
+        //}
         //IndexViewModel model = new IndexViewModel
         //{
         //    DisplayName = WebhookPayload.PurchaserDisplayName,
@@ -163,7 +173,7 @@ public class WebNotificationService : IWebNotificationService
         options.WriteIndented = true; 
         string webhookPayloadJson = JsonSerializer.Serialize(webNotificationWebhookPayload, options);
 
-        await CallNotificationURL(webhookPayloadJson, "Webhook", WebhookPayload.SubscriptionId);
+        await CallNotificationURL(webhookPayloadJson, "Webhook", WebhookPayload.SubscriptionId, country);
     }
 
 
@@ -178,7 +188,7 @@ public class WebNotificationService : IWebNotificationService
             var WebNotificationUrl = this.applicationConfigRepository.GetValueByName(StringLiteralConstants.WebNotificationUrl);
             if (country == "USA")
             {
-                WebNotificationUrl = "https://aspire-dashboard.ext.wonderfulforest-a8e2a701.westus2.azurecontainerapps.io/v1/marketplace/registerfromaccelarator";
+                WebNotificationUrl = "https://apiservice.wonderfulforest-a8e2a701.westus2.azurecontainerapps.io/v1/marketplace/registerfromaccelarator";
             }
             else if (country == "India")
             {
